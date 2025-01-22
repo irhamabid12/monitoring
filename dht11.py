@@ -1,7 +1,7 @@
 import adafruit_dht
 import board
-import websocket
-import json
+import socket
+import uuid
 import time
 from datetime import datetime
 
