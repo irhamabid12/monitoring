@@ -47,20 +47,36 @@ def read_dht11():
         return None
 
 # Fungsi untuk mengirim data ke WebSocket
-def send_data_to_websocket():
+def send_data_to_websocket(data):
     try:
         # Membuka koneksi WebSocket
         ws = websocket.create_connection(WEBSOCKET_URL)
         print("Connected to WebSocket server!")
 
-        # Loop untuk membaca dan mengirim data
+        # Mengirim data ke WebSocket
+        ws.send(json.dumps(data))
+        print("Data sent to WebSocket server!")
+
+        # Menutup koneksi WebSocket
+        ws.close()
+        
+    except (websocket.WebSocketConnectionClosedException, Exception) as e:
+        print(f"WebSocket connection error: {e}")
+        # Coba ulangi koneksi jika WebSocket terputus
+        print("Reconnecting to WebSocket...")
+        time.sleep(5)  # Tunggu 5 detik sebelum mencoba kembali
+        send_data_to_websocket(data)
+
+def loop_data():
+    try:
+        # Loop untuk membaca data
         while True:
             # Baca data dari DHT11
             sensor_data = read_dht11()
 
             # Jika data berhasil dibaca, kirim ke WebSocket
             if sensor_data:
-                ws.send(json.dumps(sensor_data))
+                send_data_to_websocket(sensor_data)
                 print(f"Sent data: {sensor_data}")
             else:
                 print("Data not available")
@@ -70,15 +86,9 @@ def send_data_to_websocket():
 
     except KeyboardInterrupt:
         print("Program dihentikan.")
-    except Exception as e:
-        print(f"Error: {e}")
     finally:
-        # Pastikan koneksi WebSocket dan sensor dilepas saat program selesai
-        ws.close()
         dht_device.exit()
-        print("WebSocket connection closed.")
-        print("Sensor closed.")
 
 # Program utama
 if __name__ == "__main__":
-    send_data_to_websocket()
+    loop_data()
