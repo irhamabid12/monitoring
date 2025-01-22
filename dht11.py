@@ -3,6 +3,7 @@ import board
 import websocket
 import json
 import time
+from datetime import datetime
 
 # Inisialisasi sensor DHT11 pada pin GPIO
 dht_device = adafruit_dht.DHT11(board.D4)  # Gunakan GPIO 4
@@ -19,7 +20,24 @@ def read_dht11():
 
         # Pastikan data tidak kosong
         if temperature is not None and humidity is not None:
-            return {"temperature": temperature, "humidity": humidity}
+            # Ambil IP address perangkat
+            ip_address = socket.gethostbyname(socket.gethostname())
+            
+            # Ambil MAC address perangkat
+            mac_address = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff)
+                                    for elements in range(0, 2*6, 2)][::-1])
+            
+            # Ambil waktu saat ini
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Kembalikan data
+            return {
+                "temp": temperature,
+                "hum": humidity,
+                "ip_address": ip_address,
+                "mac_address": mac_address,
+                "timestamp": timestamp
+            }
         else:
             return None
     except RuntimeError as error:
@@ -45,8 +63,8 @@ def send_data_to_websocket():
             else:
                 print("Data not available")
 
-            # Tunggu 2 detik sebelum pembacaan berikutnya
-            time.sleep(2)
+            # Tunggu 1 detik sebelum pembacaan berikutnya
+            time.sleep(1)
 
     except KeyboardInterrupt:
         print("Program dihentikan.")
