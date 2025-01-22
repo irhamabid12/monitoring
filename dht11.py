@@ -3,6 +3,8 @@ import board
 import websocket
 import json
 import time
+import socket
+import uuid
 from datetime import datetime
 
 # Inisialisasi sensor DHT11 pada pin GPIO
