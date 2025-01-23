@@ -104,6 +104,7 @@ def loop_data():
         print("Program dihentikan.")
     finally:
         dht_device.exit()
+        print("Sensor DHT11 dihentikan.")
 
 # Program utama
 if __name__ == "__main__":
