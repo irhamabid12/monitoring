@@ -6,12 +6,28 @@ import time
 import socket
 import uuid
 from datetime import datetime
+import subprocess
 
 # Inisialisasi sensor DHT11 pada pin GPIO
 dht_device = adafruit_dht.DHT11(board.D4)  # Gunakan GPIO 4
 
 # URL WebSocket server
 WEBSOCKET_URL = "wss://e-mon.rsudrsoetomo.jatimprov.go.id/ws_monitoring_suhu/"  #URL server WebSocket
+
+# Fungsi untuk mendapatkan IP address dari eth0
+def get_ip_from_eth0():
+    try:
+        # Menjalankan perintah 'hostname -I' untuk mendapatkan IP address
+        ip_address = subprocess.check_output("hostname -I", shell=True).decode("utf-8").strip()
+        # Ambil IP address yang dimulai dengan 10
+        ip_list = ip_address.split()
+        for ip in ip_list:
+            if ip.startswith("10."):
+                return ip
+        return None
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+        return None
 
 # Fungsi untuk membaca data dari DHT11
 def read_dht11():
@@ -23,7 +39,7 @@ def read_dht11():
         # Pastikan data tidak kosong
         if temperature is not None and humidity is not None:
             # Ambil IP address perangkat
-            ip_address = socket.gethostbyname(socket.gethostname())
+            ip_address = get_ip_from_eth0()
             
             # Ambil MAC address perangkat
             mac_address = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff)
